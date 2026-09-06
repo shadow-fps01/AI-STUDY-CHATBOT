@@ -1,0 +1,1803 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StudyMaster AI - Public Commercial Study Platform</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              500: '#10b981',
+              600: '#059669',
+              700: '#047857',
+            },
+            chatgpt: {
+              main: '#1a1d21',
+              sidebar: '#121417',
+              card: '#22262c',
+              hover: '#2a3038',
+              border: '#323943',
+              input: '#22262c',
+              userMsg: '#262c35',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+
+  <!-- Marked.js for Markdown & Highlight.js for Syntax Highlighting -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+  <!-- Paystack Inline Popup JS SDK -->
+  <script src="https://js.paystack.co/v1/inline.js"></script>
+
+  <style>
+    * {
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    code, pre, .font-mono {
+      font-family: 'Fira Code', monospace;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(150, 150, 150, 0.25);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(150, 150, 150, 0.45);
+    }
+    .prose pre {
+      background-color: #121417 !important;
+      border-radius: 0.5rem;
+      padding: 0.75rem 1rem;
+      margin-top: 0.5rem;
+      margin-bottom: 0.5rem;
+      overflow-x: auto;
+      border: 1px solid #323943;
+    }
+    .prose code {
+      background-color: rgba(150, 150, 150, 0.15);
+      padding: 0.15rem 0.35rem;
+      border-radius: 0.25rem;
+      font-size: 0.875em;
+    }
+    .prose pre code {
+      background-color: transparent !important;
+      padding: 0 !important;
+    }
+    .prose p {
+      margin-bottom: 0.75rem;
+      line-height: 1.65;
+    }
+    .prose p:last-child {
+      margin-bottom: 0;
+    }
+    .prose ul {
+      list-style-type: disc;
+      padding-left: 1.25rem;
+      margin-bottom: 0.75rem;
+    }
+    .prose ol {
+      list-style-type: decimal;
+      padding-left: 1.25rem;
+      margin-bottom: 0.75rem;
+    }
+    .prose li {
+      margin-bottom: 0.25rem;
+    }
+    .pulse-dot {
+      animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: .4; transform: scale(0.85); }
+    }
+  </style>
+</head>
+
+<body class="bg-chatgpt-main text-gray-100 flex h-screen w-screen overflow-hidden antialiased selection:bg-emerald-500 selection:text-white">
+
+  <!-- ========================================================================= -->
+  <!-- SIDEBAR -->
+  <!-- ========================================================================= -->
+  <aside id="sidebar" class="bg-chatgpt-sidebar border-r border-chatgpt-border w-72 flex-shrink-0 flex flex-col h-full transition-all duration-300 z-30 fixed md:relative -translate-x-full md:translate-x-0">
+    
+    <!-- Sidebar Header / Branding -->
+    <div class="p-3.5 border-b border-chatgpt-border flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-600 via-teal-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-emerald-500/20 text-white font-bold text-base">
+          🎓
+        </div>
+        <div>
+          <div class="flex items-center gap-1.5">
+            <span class="font-bold text-sm tracking-wide text-white">StudyMaster AI</span>
+          </div>
+          <p class="text-[11px] text-gray-400">Universal Academic Coach</p>
+        </div>
+      </div>
+      
+      <button id="closeSidebarBtn" class="md:hidden p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-chatgpt-card">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+      </button>
+    </div>
+
+    <!-- New Chat Action Button -->
+    <div class="p-3 space-y-2">
+      <button id="newChatBtn" class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-chatgpt-card hover:bg-chatgpt-hover border border-chatgpt-border text-sm font-medium text-white shadow-sm transition-all group">
+        <div class="flex items-center gap-2.5">
+          <div class="w-5 h-5 rounded-md bg-emerald-500/20 text-emerald-400 flex items-center justify-center group-hover:bg-emerald-500 group-hover:text-white transition-colors">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+          </div>
+          <span>New Study Session</span>
+        </div>
+        <kbd class="hidden sm:inline-block text-[10px] bg-chatgpt-sidebar px-1.5 py-0.5 rounded text-gray-400 border border-chatgpt-border font-mono">Ctrl+K</kbd>
+      </button>
+
+      <!-- Monetization Upgrade Card in Sidebar -->
+      <div id="sidebarUpgradeBanner" class="p-3 rounded-xl bg-gradient-to-r from-emerald-950/50 to-cyan-950/40 border border-emerald-500/30 text-xs">
+        <div class="flex items-center justify-between mb-1">
+          <span class="font-bold text-white flex items-center gap-1.5">
+            <span class="text-emerald-400">⚡</span> StudyMaster Pro
+          </span>
+          <span id="sidebarTierBadge" class="text-[9px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded font-bold uppercase">Free Plan</span>
+        </div>
+        <p class="text-[11px] text-gray-400 mb-2">Get unlimited AI tutoring, step-by-step problem solver, and exam simulator.</p>
+        <button id="btnOpenSubscriptionModal" class="w-full py-1.5 px-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-[11px] transition-colors shadow-sm flex items-center justify-center gap-1">
+          <span id="sidebarUpgradePriceText">Upgrade to Pro</span>
+          <span class="text-[10px] opacity-80">(Paystack)</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- SEARCH HISTORY SECTION -->
+    <div class="px-3 pb-2">
+      <div class="relative">
+        <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-gray-400">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+        </div>
+        <input 
+          type="text" 
+          id="historySearchInput" 
+          placeholder="Search study sessions..." 
+          class="w-full pl-8 pr-7 py-1.5 text-xs bg-chatgpt-main border border-chatgpt-border rounded-lg text-gray-200 placeholder-gray-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
+        />
+        <button id="clearSearchBtn" class="hidden absolute inset-y-0 right-0 pr-2 flex items-center text-gray-400 hover:text-white">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+      <div id="searchMatchCount" class="hidden text-[10px] text-emerald-400 mt-1 px-1 font-medium"></div>
+    </div>
+
+    <!-- History List (Scrollable) -->
+    <div class="flex-1 overflow-y-auto px-2 space-y-3 pb-4" id="historyContainer">
+      <div>
+        <div class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider px-2 py-1 flex items-center justify-between">
+          <span>Study Conversations</span>
+          <span id="chatCountBadge" class="text-[10px] text-gray-500 font-mono">0</span>
+        </div>
+        <div id="recentChatsList" class="space-y-1 mt-1">
+          <!-- Injected dynamically -->
+        </div>
+      </div>
+
+      <!-- SQLite Saved Server History for Logged in User -->
+      <div id="userSavedHistorySection" class="pt-2 border-t border-chatgpt-border/50">
+        <div class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider px-2 py-1 flex items-center justify-between">
+          <span class="flex items-center gap-1">
+            <svg class="w-3 h-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2 1.5 3 3.5 3h9c2 0 3.5-1 3.5-3V7c0-2-1.5-3-3.5-3h-9C5.5 4 4 5 4 7z"></path></svg>
+            SQLite Sync
+          </span>
+          <button id="refreshSavedHistoryBtn" title="Sync with SQLite database" class="text-gray-400 hover:text-emerald-400 transition-colors p-0.5">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+          </button>
+        </div>
+        <div id="savedChatHistoryList" class="space-y-1 mt-1">
+          <!-- Injected from SQLite -->
+        </div>
+      </div>
+    </div>
+
+    <!-- USER PROFILE / LOGIN FOOTER -->
+    <div class="p-3 border-t border-chatgpt-border bg-chatgpt-sidebar/80 relative">
+      <div id="userProfilePill" class="flex items-center justify-between p-2 rounded-xl bg-chatgpt-card/60 hover:bg-chatgpt-card border border-chatgpt-border/70 cursor-pointer transition-all">
+        <div class="flex items-center gap-2.5 overflow-hidden">
+          <div id="userAvatar" class="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-teal-700 flex items-center justify-center text-white font-bold text-xs flex-shrink-0 shadow">
+            G
+          </div>
+          <div class="overflow-hidden">
+            <div id="userNameDisplay" class="text-xs font-semibold text-white truncate">Guest Student</div>
+            <div id="userSubtitleDisplay" class="text-[10px] text-gray-400 truncate">Click to log in / profile</div>
+          </div>
+        </div>
+        <span id="userTierTag" class="text-[10px] px-1.5 py-0.5 rounded font-bold uppercase bg-gray-700 text-gray-300">FREE</span>
+      </div>
+
+      <!-- Popover Dropdown Menu -->
+      <div id="profileDropdown" class="hidden absolute bottom-16 left-3 right-3 bg-chatgpt-card border border-chatgpt-border rounded-xl shadow-2xl p-1.5 space-y-1 z-50">
+        <button id="btnOpenAuthModal" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-gray-200 hover:bg-chatgpt-hover hover:text-white rounded-lg transition-colors text-left">
+          <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
+          <span id="menuAuthText">Sign In / Register</span>
+        </button>
+        <button id="btnOpenProfileSettings" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-gray-200 hover:bg-chatgpt-hover hover:text-white rounded-lg transition-colors text-left">
+          <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+          <span>Academic Study Profile</span>
+        </button>
+        <button id="btnTriggerUpgrade" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-amber-300 hover:bg-amber-500/10 rounded-lg transition-colors text-left">
+          <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          <span id="dropdownUpgradeText">Upgrade to Pro (Paystack)</span>
+        </button>
+        <button id="btnClearCurrentHistory" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-yellow-400 hover:bg-chatgpt-hover rounded-lg transition-colors text-left">
+          <svg class="w-4 h-4 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+          <span>Clear SQLite Chat History</span>
+        </button>
+        <div class="border-t border-chatgpt-border my-1"></div>
+        <button id="btnLogout" class="hidden w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-red-400 hover:bg-red-500/10 rounded-lg transition-colors text-left">
+          <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+          <span>Log Out</span>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Sidebar Overlay for mobile -->
+  <div id="sidebarOverlay" class="fixed inset-0 bg-black/60 z-20 hidden md:hidden"></div>
+
+  <!-- MAIN CHAT AREA -->
+  <main class="flex-1 flex flex-col h-full relative overflow-hidden bg-chatgpt-main">
+    
+    <!-- Top Navigation Header -->
+    <header class="h-14 border-b border-chatgpt-border px-4 flex items-center justify-between bg-chatgpt-main/90 backdrop-blur z-10">
+      <div class="flex items-center gap-3">
+        <button id="openSidebarBtn" class="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-chatgpt-card transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"></path></svg>
+        </button>
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-bold text-white tracking-wide">STUDYMASTER AI</span>
+          <span class="text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full font-mono">Commercial Public Edition</span>
+        </div>
+      </div>
+
+      <!-- Right Header Actions -->
+      <div class="flex items-center gap-2">
+        <div id="apiStatusBadge" class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 pulse-dot"></span>
+          <span>FastAPI + SQLite Online</span>
+        </div>
+
+        <button id="btnHeaderUpgrade" class="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-xs font-bold text-gray-950 shadow-md transition-all">
+          <span>👑</span>
+          <span id="headerUpgradeText">Go Pro (Paystack)</span>
+        </button>
+
+        <button id="btnQuickLogin" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-medium text-white shadow-md shadow-emerald-600/20 transition-all">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+          <span id="quickLoginLabel">Sign In</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- CHAT MESSAGES SCROLL CONTAINER -->
+    <div id="chatMessagesContainer" class="flex-1 overflow-y-auto px-4 py-6 md:px-0 scroll-smooth">
+      <div class="max-w-3xl mx-auto space-y-6">
+
+        <!-- EMPTY STATE / HERO LANDING -->
+        <div id="chatEmptyState" class="flex flex-col items-center justify-center min-h-[65vh] text-center px-4">
+          <div class="relative mb-5 group">
+            <div class="absolute -inset-1 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 opacity-60 blur-lg group-hover:opacity-100 transition duration-500"></div>
+            <div class="relative w-16 h-16 rounded-2xl bg-chatgpt-card border border-chatgpt-border flex items-center justify-center text-3xl shadow-xl">
+              🎓
+            </div>
+          </div>
+
+          <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-white mb-2">
+            Welcome to <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400">StudyMaster AI</span>
+          </h2>
+          <p id="welcomeUserGreeting" class="text-sm text-gray-400 max-w-lg mb-8">
+            Your universal AI tutor for conceptual breakthroughs, active recall quizzes, step-by-step problem breakdown, and high-efficiency study scheduling.
+          </p>
+
+          <!-- Study Suggestion Cards Grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-2xl text-left">
+            
+            <div class="prompt-card p-3.5 rounded-xl bg-chatgpt-card hover:bg-chatgpt-hover border border-chatgpt-border hover:border-emerald-500/50 cursor-pointer transition-all duration-200 group" data-prompt="Explain the core intuition behind the Feynman Technique, and apply it step-by-step to explain how neural networks / quantum mechanics / supply & demand works for a beginner.">
+              <div class="flex items-start justify-between">
+                <span class="text-base mb-1">🧠</span>
+                <svg class="w-4 h-4 text-gray-500 group-hover:text-emerald-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+              </div>
+              <div class="text-xs font-semibold text-gray-200 group-hover:text-white">Feynman Concept Breakdown</div>
+              <div class="text-[11px] text-gray-400 mt-0.5 line-clamp-1">Master complex topics through intuitive analogies</div>
+            </div>
+
+            <div class="prompt-card p-3.5 rounded-xl bg-chatgpt-card hover:bg-chatgpt-hover border border-chatgpt-border hover:border-emerald-500/50 cursor-pointer transition-all duration-200 group" data-prompt="Conduct an Active Recall quiz with me right now! Generate 4 challenging multiple-choice questions and 1 scenario problem based on my study profile subjects, and explain the key principles.">
+              <div class="flex items-start justify-between">
+                <span class="text-base mb-1">📝</span>
+                <svg class="w-4 h-4 text-gray-500 group-hover:text-emerald-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+              </div>
+              <div class="text-xs font-semibold text-gray-200 group-hover:text-white">Active Recall & Quiz Mode</div>
+              <div class="text-[11px] text-gray-400 mt-0.5 line-clamp-1">Pinpoint gaps with instant diagnostic testing</div>
+            </div>
+
+            <div class="prompt-card p-3.5 rounded-xl bg-chatgpt-card hover:bg-chatgpt-hover border border-chatgpt-border hover:border-emerald-500/50 cursor-pointer transition-all duration-200 group" data-prompt="Design a high-efficiency 7-day revision schedule for my upcoming exams using the Pomodoro technique (50/10 focus blocks) and spaced repetition principles.">
+              <div class="flex items-start justify-between">
+                <span class="text-base mb-1">⏱️</span>
+                <svg class="w-4 h-4 text-gray-500 group-hover:text-emerald-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+              </div>
+              <div class="text-xs font-semibold text-gray-200 group-hover:text-white">Pomodoro & Revision Plan</div>
+              <div class="text-[11px] text-gray-400 mt-0.5 line-clamp-1">Structured schedule for maximum retention</div>
+            </div>
+
+            <div class="prompt-card p-3.5 rounded-xl bg-chatgpt-card hover:bg-chatgpt-hover border border-chatgpt-border hover:border-emerald-500/50 cursor-pointer transition-all duration-200 group" data-prompt="I have a tough problem in STEM/Coursework. Please act as a Socratic tutor: guide me step-by-step through solving it without giving me the final answer directly until I work through each stage.">
+              <div class="flex items-start justify-between">
+                <span class="text-base mb-1">🔬</span>
+                <svg class="w-4 h-4 text-gray-500 group-hover:text-emerald-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+              </div>
+              <div class="text-xs font-semibold text-gray-200 group-hover:text-white">Socratic Problem Solving</div>
+              <div class="text-[11px] text-gray-400 mt-0.5 line-clamp-1">Step-by-step guidance for tough homework problems</div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Dynamic Messages List -->
+        <div id="messagesList" class="space-y-6"></div>
+
+        <!-- Thinking Indicator -->
+        <div id="thinkingIndicator" class="hidden flex items-start gap-3.5">
+          <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-sm shadow flex-shrink-0">
+            🎓
+          </div>
+          <div class="flex-1 bg-chatgpt-card border border-chatgpt-border rounded-2xl px-4 py-3 max-w-xl">
+            <div class="flex items-center gap-2 text-xs font-semibold text-emerald-400 mb-1">
+              <span>StudyMaster AI is thinking</span>
+              <div class="flex gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-bounce" style="animation-delay: 0s;"></span>
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-bounce" style="animation-delay: 0.2s;"></span>
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-bounce" style="animation-delay: 0.4s;"></span>
+              </div>
+            </div>
+            <p id="thinkingStepText" class="text-xs text-gray-400">Synthesizing pedagogical framework and subject knowledge...</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Floating Scroll To Bottom Button -->
+    <button id="scrollToBottomBtn" class="hidden absolute bottom-24 right-8 p-2.5 rounded-full bg-chatgpt-card hover:bg-chatgpt-hover border border-chatgpt-border text-gray-300 shadow-xl transition-all z-20">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
+    </button>
+
+    <!-- INPUT AREA -->
+    <div class="p-4 bg-gradient-to-t from-chatgpt-main via-chatgpt-main to-transparent">
+      <div class="max-w-3xl mx-auto">
+        <form id="chatForm" class="relative bg-chatgpt-input border border-chatgpt-border rounded-2xl shadow-lg focus-within:border-gray-500 focus-within:ring-1 focus-within:ring-gray-500 transition-all p-2">
+          
+          <textarea 
+            id="chatInput" 
+            rows="1" 
+            placeholder="Ask StudyMaster AI any academic question or study challenge..." 
+            class="w-full bg-transparent text-gray-100 placeholder-gray-400 px-2 py-1.5 text-sm resize-none focus:outline-none max-h-48 overflow-y-auto leading-relaxed"
+          ></textarea>
+
+          <div class="flex items-center justify-between pt-1.5 px-1">
+            <div class="flex items-center gap-1.5">
+              <button 
+                type="button" 
+                id="btnVoiceInput" 
+                title="Voice Dictation" 
+                class="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-chatgpt-hover transition-colors"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
+              </button>
+
+              <button 
+                type="button" 
+                id="btnInsertTemplate" 
+                title="Insert Study Prompt" 
+                class="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-chatgpt-hover transition-colors text-xs font-mono"
+              >
+                /quiz-me
+              </button>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <span id="charCounter" class="text-[10px] text-gray-500 font-mono hidden sm:inline">0 chars</span>
+              <button 
+                type="submit" 
+                id="sendBtn" 
+                disabled 
+                class="p-2 rounded-xl bg-white text-black disabled:bg-gray-600 disabled:text-gray-400 disabled:cursor-not-allowed hover:bg-gray-200 transition-all font-semibold"
+              >
+                <svg class="w-4 h-4 transform rotate-90" fill="currentColor" viewBox="0 0 20 20"><path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"></path></svg>
+              </button>
+            </div>
+          </div>
+        </form>
+
+        <div class="flex items-center justify-between text-[11px] text-gray-500 mt-2 px-1">
+          <span>Encrypted backend AI logic • Credentials safely stored server-side</span>
+          <span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> SQLite Database Active</span>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: SECURE AUTHENTICATION (LOGIN & REGISTRATION) -->
+  <!-- ========================================================================= -->
+  <div id="authModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden animate-in fade-in duration-200">
+    <div class="bg-chatgpt-card border border-chatgpt-border rounded-2xl max-w-md w-full shadow-2xl overflow-hidden flex flex-col">
+      
+      <div class="px-6 py-4 border-b border-chatgpt-border flex items-center justify-between bg-chatgpt-sidebar">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">
+            🔒
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-white">Student Account</h3>
+            <p class="text-xs text-gray-400">Secured with PBKDF2 hashing & JWT sessions</p>
+          </div>
+        </div>
+        <button id="closeAuthModalBtn" class="text-gray-400 hover:text-white p-1 rounded-lg hover:bg-chatgpt-card">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <!-- Auth Tabs -->
+      <div class="flex border-b border-chatgpt-border bg-chatgpt-sidebar/60 px-6 pt-2">
+        <button id="tabAuthLogin" class="px-4 py-2 text-xs font-semibold border-b-2 border-emerald-500 text-emerald-400 transition-colors">
+          Log In
+        </button>
+        <button id="tabAuthRegister" class="px-4 py-2 text-xs font-semibold border-b-2 border-transparent text-gray-400 hover:text-white transition-colors">
+          Create Account
+        </button>
+      </div>
+
+      <div class="p-6 space-y-4">
+        <!-- Login Form -->
+        <form id="loginForm" class="space-y-4">
+          <div>
+            <label class="block text-[11px] font-semibold text-gray-300 mb-1">Email Address</label>
+            <input type="email" id="loginEmail" required placeholder="student@example.com" class="w-full bg-chatgpt-main border border-chatgpt-border rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" />
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-gray-300 mb-1">Password</label>
+            <input type="password" id="loginPassword" required placeholder="••••••••" class="w-full bg-chatgpt-main border border-chatgpt-border rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" />
+          </div>
+          <button type="submit" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-bold text-white transition-all shadow-md shadow-emerald-600/20">
+            Sign In to StudyMaster
+          </button>
+        </form>
+
+        <!-- Register Form -->
+        <form id="registerForm" class="hidden space-y-3.5">
+          <div>
+            <label class="block text-[11px] font-semibold text-gray-300 mb-1">Full Name / Username <span class="text-red-400">*</span></label>
+            <input type="text" id="regUsername" required placeholder="e.g. Alex Johnson" class="w-full bg-chatgpt-main border border-chatgpt-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" />
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-gray-300 mb-1">Email Address <span class="text-red-400">*</span></label>
+            <input type="email" id="regEmail" required placeholder="alex@university.edu" class="w-full bg-chatgpt-main border border-chatgpt-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" />
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-gray-300 mb-1">Password (min 6 characters) <span class="text-red-400">*</span></label>
+            <input type="password" id="regPassword" required minlength="6" placeholder="••••••••" class="w-full bg-chatgpt-main border border-chatgpt-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" />
+          </div>
+          <button type="submit" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-bold text-white transition-all shadow-md shadow-emerald-600/20">
+            Create Free Student Account
+          </button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: ACADEMIC STUDY PROFILE SETTINGS (STORED IN SQLITE) -->
+  <!-- ========================================================================= -->
+  <div id="profileModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden animate-in fade-in duration-200">
+    <div class="bg-chatgpt-card border border-chatgpt-border rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      
+      <div class="px-6 py-4 border-b border-chatgpt-border flex items-center justify-between bg-chatgpt-sidebar">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">
+            📚
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-white">Academic Study Profile</h3>
+            <p class="text-xs text-gray-400">Stored safely in SQLite database to tailor AI explanations</p>
+          </div>
+        </div>
+        <button id="closeProfileModalBtn" class="text-gray-400 hover:text-white p-1 rounded-lg hover:bg-chatgpt-card">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <form id="studyProfileForm" class="p-6 overflow-y-auto flex-1 space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-[11px] font-semibold text-gray-300 mb-1">Education Level</label>
+            <select id="profEducationLevel" class="w-full bg-chatgpt-main border border-chatgpt-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+              <option value="High School">High School</option>
+              <option value="Undergraduate" selected>Undergraduate (College / University)</option>
+              <option value="Graduate / Master / PhD">Graduate (Master / PhD)</option>
+              <option value="Self-Learner">Self-Taught / Independent Learner</option>
+              <option value="Professional Exam Candidate">Professional Exam Candidate</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-gray-300 mb-1">Field of Study / Major</label>
+            <input type="text" id="profFieldOfStudy" placeholder="e.g. Computer Science, Pre-Med, Economics" class="w-full bg-chatgpt-main border border-chatgpt-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-semibold text-gray-300 mb-1">Current Subjects / Courses (comma separated)</label>
+          <input type="text" id="profSubjects" placeholder="e.g. Calculus II, Organic Chemistry, Algorithms, Macroeconomics" class="w-full bg-chatgpt-main border border-chatgpt-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" />
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-[11px] font-semibold text-gray-300 mb-1">Target Exams / Milestones</label>
+            <input type="text" id="profTargetExams" placeholder="e.g. Semester Finals, SAT, MCAT, GRE" class="w-full bg-chatgpt-main border border-chatgpt-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" />
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-gray-300 mb-1">Target Score / Grade Goal</label>
+            <input type="text" id="profTargetScore" placeholder="e.g. 4.0 GPA / Top 5% / 320+" class="w-full bg-chatgpt-main border border-chatgpt-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-[11px] font-semibold text-gray-300 mb-1">Preferred Learning Style</label>
+            <select id="profLearningStyle" class="w-full bg-chatgpt-main border border-chatgpt-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+              <option value="Feynman Technique & Step-by-Step" selected>Feynman Technique (Simple Intuition)</option>
+              <option value="Active Recall & Socratic Quizzing">Active Recall & Socratic Quizzing</option>
+              <option value="Visual Analogies & Mental Models">Visual Analogies & Mental Models</option>
+              <option value="Rigorous Proofs & Formal Mathematics">Rigorous Formal Derivations</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-gray-300 mb-1">Daily Study Target (Hours)</label>
+            <input type="number" step="0.5" min="0.5" max="16" id="profDailyHours" value="3.0" class="w-full bg-chatgpt-main border border-chatgpt-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-semibold text-emerald-400 mb-1">Custom Study Directives for AI</label>
+          <textarea id="profDirectives" rows="3" placeholder="e.g. Always provide practice questions after explaining concepts. Keep advice analytical..." class="w-full bg-chatgpt-main border border-chatgpt-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono text-[11px] leading-relaxed"></textarea>
+        </div>
+
+        <div class="pt-2">
+          <button type="submit" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-bold text-white transition-all shadow-lg shadow-emerald-600/25">
+            Save Profile to SQLite Database
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: PAYSTACK SUBSCRIPTION & CHECKOUT -->
+  <!-- ========================================================================= -->
+  <div id="subscriptionModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden animate-in fade-in duration-200">
+    <div class="bg-chatgpt-card border border-chatgpt-border rounded-2xl max-w-md w-full shadow-2xl overflow-hidden flex flex-col">
+      
+      <div class="px-6 py-4 border-b border-chatgpt-border flex items-center justify-between bg-chatgpt-sidebar">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold">
+            💳
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-white">Upgrade to StudyMaster Pro</h3>
+            <p class="text-xs text-cyan-400 font-medium">Paystack Payment Integration</p>
+          </div>
+        </div>
+        <button id="closeSubModalBtn" class="text-gray-400 hover:text-white p-1 rounded-lg hover:bg-chatgpt-card">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-5">
+        <div class="text-center py-2">
+          <span class="text-xs font-bold uppercase tracking-wider text-emerald-400">Pro Student Subscription</span>
+          <div class="flex items-center justify-center gap-1 mt-1">
+            <span id="modalPlanPriceDisplay" class="text-4xl font-extrabold text-white">₦5,000</span>
+            <span class="text-xs text-gray-400">/ month</span>
+          </div>
+          <p class="text-xs text-gray-400 mt-1">Billed monthly • Cancel anytime</p>
+        </div>
+
+        <div class="space-y-2.5 text-xs text-gray-200 bg-chatgpt-main p-4 rounded-xl border border-chatgpt-border">
+          <div class="flex items-center gap-2 font-medium">
+            <span class="text-emerald-400">✓</span>
+            <span>Unlimited AI Tutoring & Conceptual Breakdowns</span>
+          </div>
+          <div class="flex items-center gap-2 font-medium">
+            <span class="text-emerald-400">✓</span>
+            <span>Step-by-Step STEM & Problem Solving Engine</span>
+          </div>
+          <div class="flex items-center gap-2 font-medium">
+            <span class="text-emerald-400">✓</span>
+            <span>Custom Socratic Exam Simulation & Question Bank</span>
+          </div>
+          <div class="flex items-center gap-2 font-medium">
+            <span class="text-emerald-400">✓</span>
+            <span>Priority Latency & Dedicated AI Compute</span>
+          </div>
+          <div class="flex items-center gap-2 font-medium">
+            <span class="text-cyan-400">✓</span>
+            <span>Pay via Card, Bank Transfer, USSD, Apple Pay</span>
+          </div>
+        </div>
+
+        <div class="p-3 bg-cyan-500/10 border border-cyan-500/20 rounded-xl text-[11px] text-cyan-300">
+          <strong>Paystack Integration:</strong> Supports instant inline checkout & sandbox test simulation. No charges in test mode.
+        </div>
+
+        <button id="btnProceedToPaystackCheckout" class="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-500 hover:to-teal-500 text-white font-bold text-sm shadow-lg shadow-cyan-600/30 transition-all flex items-center justify-center gap-2">
+          <span>Pay with Paystack</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- JAVASCRIPT LOGIC & APP CORE -->
+  <!-- ========================================================================= -->
+  <script>
+    (function () {
+      let API_BASE = (window.location.origin && window.location.origin.startsWith('http') && !window.location.origin.startsWith('file'))
+        ? window.location.origin
+        : 'http://127.0.0.1:8080';
+      
+      const STATE = {
+        token: localStorage.getItem('studymaster_token') || null,
+        user: null,
+        profile: null,
+        currentChatId: null,
+        localSessions: [],
+        serverHistory: [],
+        isGenerating: false,
+        speechRecognition: null,
+        isListening: false
+      };
+
+      marked.setOptions({
+        highlight: function(code, lang) {
+          if (lang && hljs.getLanguage(lang)) {
+            try { return hljs.highlight(code, { language: lang }).value; } catch (__) {}
+          }
+          return hljs.highlightAuto(code).value;
+        },
+        breaks: true,
+        gfm: true
+      });
+
+      // DOM Elements
+      const sidebar = document.getElementById('sidebar');
+      const sidebarOverlay = document.getElementById('sidebarOverlay');
+      const openSidebarBtn = document.getElementById('openSidebarBtn');
+      const closeSidebarBtn = document.getElementById('closeSidebarBtn');
+      const newChatBtn = document.getElementById('newChatBtn');
+      const historySearchInput = document.getElementById('historySearchInput');
+      const clearSearchBtn = document.getElementById('clearSearchBtn');
+      const searchMatchCount = document.getElementById('searchMatchCount');
+      const recentChatsList = document.getElementById('recentChatsList');
+      const savedChatHistoryList = document.getElementById('savedChatHistoryList');
+      const refreshSavedHistoryBtn = document.getElementById('refreshSavedHistoryBtn');
+      const chatCountBadge = document.getElementById('chatCountBadge');
+
+      const userProfilePill = document.getElementById('userProfilePill');
+      const profileDropdown = document.getElementById('profileDropdown');
+      const userNameDisplay = document.getElementById('userNameDisplay');
+      const userSubtitleDisplay = document.getElementById('userSubtitleDisplay');
+      const userAvatar = document.getElementById('userAvatar');
+      const userTierTag = document.getElementById('userTierTag');
+      const sidebarTierBadge = document.getElementById('sidebarTierBadge');
+      const quickLoginLabel = document.getElementById('quickLoginLabel');
+      const menuAuthText = document.getElementById('menuAuthText');
+      const btnLogout = document.getElementById('btnLogout');
+
+      const chatMessagesContainer = document.getElementById('chatMessagesContainer');
+      const chatEmptyState = document.getElementById('chatEmptyState');
+      const messagesList = document.getElementById('messagesList');
+      const thinkingIndicator = document.getElementById('thinkingIndicator');
+      const scrollToBottomBtn = document.getElementById('scrollToBottomBtn');
+      const welcomeUserGreeting = document.getElementById('welcomeUserGreeting');
+
+      const chatForm = document.getElementById('chatForm');
+      const chatInput = document.getElementById('chatInput');
+      const sendBtn = document.getElementById('sendBtn');
+      const charCounter = document.getElementById('charCounter');
+      const btnVoiceInput = document.getElementById('btnVoiceInput');
+      const btnInsertTemplate = document.getElementById('btnInsertTemplate');
+      const apiStatusBadge = document.getElementById('apiStatusBadge');
+
+      const authModal = document.getElementById('authModal');
+      const closeAuthModalBtn = document.getElementById('closeAuthModalBtn');
+      const tabAuthLogin = document.getElementById('tabAuthLogin');
+      const tabAuthRegister = document.getElementById('tabAuthRegister');
+      const loginForm = document.getElementById('loginForm');
+      const registerForm = document.getElementById('registerForm');
+      const btnOpenAuthModal = document.getElementById('btnOpenAuthModal');
+      const btnQuickLogin = document.getElementById('btnQuickLogin');
+
+      const profileModal = document.getElementById('profileModal');
+      const closeProfileModalBtn = document.getElementById('closeProfileModalBtn');
+      const btnOpenProfileSettings = document.getElementById('btnOpenProfileSettings');
+      const studyProfileForm = document.getElementById('studyProfileForm');
+
+      const subscriptionModal = document.getElementById('subscriptionModal');
+      const closeSubModalBtn = document.getElementById('closeSubModalBtn');
+      const btnOpenSubscriptionModal = document.getElementById('btnOpenSubscriptionModal');
+      const btnHeaderUpgrade = document.getElementById('btnHeaderUpgrade');
+      const btnTriggerUpgrade = document.getElementById('btnTriggerUpgrade');
+      const btnProceedToPaystackCheckout = document.getElementById('btnProceedToPaystackCheckout') || document.getElementById('btnProceedToStripeCheckout');
+      const btnClearCurrentHistory = document.getElementById('btnClearCurrentHistory');
+
+      // Helper for auth headers
+      function getAuthHeaders() {
+        const headers = { 'Content-Type': 'application/json' };
+        if (STATE.token) {
+          headers['Authorization'] = `Bearer ${STATE.token}`;
+        }
+        return headers;
+      }
+
+      // =========================================================================
+      // INITIALIZATION
+      // =========================================================================
+      async function initApp() {
+        loadLocalSessions();
+        setupEventListeners();
+        setupSpeechRecognition();
+        
+        chatInput.addEventListener('input', autoResizeTextarea);
+
+        await checkApiHealth();
+        setInterval(checkApiHealth, 30000);
+        await fetchBillingConfig();
+        await checkUrlForPaymentCallback();
+
+        // If saved token exists, verify and fetch user + profile
+        if (STATE.token) {
+          await fetchCurrentUser();
+        } else {
+          updateUserUI();
+        }
+
+        if (STATE.localSessions.length > 0) {
+          loadSession(STATE.localSessions[0].id);
+        } else {
+          startNewChat();
+        }
+
+        renderRecentChats();
+      }
+
+      async function checkApiHealth() {
+        const candidates = [
+          API_BASE,
+          'http://127.0.0.1:8080',
+          'http://127.0.0.1:8000',
+          'http://localhost:8080',
+          'http://localhost:8000'
+        ];
+        for (const url of candidates) {
+          try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 2000);
+            const res = await fetch(`${url}/api/v1/bot-info`, { signal: controller.signal });
+            clearTimeout(timeoutId);
+            if (res.ok) {
+              API_BASE = url;
+              apiStatusBadge.classList.remove('hidden');
+              return true;
+            }
+          } catch (e) {
+            // try next candidate
+          }
+        }
+        apiStatusBadge.classList.add('hidden');
+        return false;
+      }
+
+      // =========================================================================
+      // USER & AUTHENTICATION (SECURE SQLITE + JWT)
+      // =========================================================================
+      async function fetchCurrentUser() {
+        if (!STATE.token) return;
+        try {
+          const res = await fetch(`${API_BASE}/api/v1/auth/me`, {
+            headers: getAuthHeaders()
+          });
+          if (res.ok) {
+            const data = await res.json();
+            STATE.user = data.user;
+            STATE.profile = data.profile;
+            updateUserUI();
+            await fetchUserServerHistory();
+          } else {
+            logoutUser(false);
+          }
+        } catch (e) {
+          console.warn('Failed to fetch user profile:', e);
+        }
+      }
+
+      function updateUserUI() {
+        if (STATE.user) {
+          const name = STATE.user.username;
+          const initial = name.charAt(0).toUpperCase();
+          const isPro = STATE.user.tier === 'pro';
+
+          userNameDisplay.textContent = name;
+          userSubtitleDisplay.textContent = STATE.profile ? `${STATE.profile.education_level || 'Student'}` : 'Active Student';
+          userAvatar.textContent = initial;
+          quickLoginLabel.textContent = name;
+          menuAuthText.textContent = `Logged in as ${name}`;
+          btnLogout.classList.remove('hidden');
+
+          const tierText = isPro ? 'PRO ⚡' : 'FREE';
+          userTierTag.textContent = tierText;
+          sidebarTierBadge.textContent = tierText;
+
+          if (isPro) {
+            userTierTag.className = "text-[10px] px-2 py-0.5 rounded font-bold uppercase bg-gradient-to-r from-amber-400 to-amber-500 text-gray-950 shadow-sm";
+            sidebarTierBadge.className = "text-[9px] bg-amber-400/20 text-amber-300 px-1.5 py-0.5 rounded font-bold uppercase";
+            btnHeaderUpgrade.classList.add('hidden');
+          } else {
+            userTierTag.className = "text-[10px] px-1.5 py-0.5 rounded font-bold uppercase bg-gray-700 text-gray-300";
+            sidebarTierBadge.className = "text-[9px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded font-bold uppercase";
+            btnHeaderUpgrade.classList.remove('hidden');
+          }
+
+          welcomeUserGreeting.innerHTML = `Welcome back, <strong class="text-white">${escapeHtml(name)}</strong>! What academic challenge or subject would you like to master today?`;
+        } else {
+          userNameDisplay.textContent = 'Guest Student';
+          userSubtitleDisplay.textContent = 'Click to sign in';
+          userAvatar.textContent = 'G';
+          userTierTag.textContent = 'GUEST';
+          userTierTag.className = "text-[10px] px-1.5 py-0.5 rounded font-bold uppercase bg-gray-700 text-gray-300";
+          sidebarTierBadge.textContent = 'Free Plan';
+          quickLoginLabel.textContent = 'Sign In';
+          menuAuthText.textContent = 'Sign In / Register';
+          btnLogout.classList.add('hidden');
+          btnHeaderUpgrade.classList.remove('hidden');
+          welcomeUserGreeting.textContent = 'Your universal AI tutor for conceptual breakthroughs, active recall quizzes, and high-efficiency study scheduling.';
+        }
+      }
+
+      function logoutUser(showNotification = true) {
+        STATE.token = null;
+        STATE.user = null;
+        STATE.profile = null;
+        STATE.serverHistory = [];
+        localStorage.removeItem('studymaster_token');
+        updateUserUI();
+        renderSavedServerHistory();
+        if (showNotification) showToast('Logged out successfully', 'info');
+      }
+
+      // =========================================================================
+      // STUDY PROFILE MANAGEMENT
+      // =========================================================================
+      function populateProfileModal() {
+        if (!STATE.user) {
+          showToast('Please sign in to configure your study profile.', 'warning');
+          openAuthModal();
+          return;
+        }
+
+        const p = STATE.profile || {};
+        document.getElementById('profEducationLevel').value = p.education_level || 'Undergraduate';
+        document.getElementById('profFieldOfStudy').value = p.field_of_study || '';
+        document.getElementById('profSubjects').value = Array.isArray(p.subjects) ? p.subjects.join(', ') : '';
+        document.getElementById('profTargetExams').value = p.target_exams || '';
+        document.getElementById('profTargetScore').value = p.target_score || '';
+        document.getElementById('profLearningStyle').value = p.learning_style || 'Feynman Technique & Step-by-Step';
+        document.getElementById('profDailyHours').value = p.daily_study_hours || 3.0;
+        document.getElementById('profDirectives').value = p.custom_directives || '';
+
+        profileModal.classList.remove('hidden');
+      }
+
+      async function saveStudyProfile(e) {
+        e.preventDefault();
+        if (!STATE.token) {
+          showToast('Please sign in first', 'warning');
+          return;
+        }
+
+        const subjectsRaw = document.getElementById('profSubjects').value;
+        const subjectsList = subjectsRaw.split(',').map(s => s.trim()).filter(Boolean);
+
+        const payload = {
+          education_level: document.getElementById('profEducationLevel').value,
+          field_of_study: document.getElementById('profFieldOfStudy').value.trim() || 'General Studies',
+          subjects: subjectsList,
+          target_exams: document.getElementById('profTargetExams').value.trim() || 'Academic Excellence',
+          target_score: document.getElementById('profTargetScore').value.trim() || 'Top Marks',
+          learning_style: document.getElementById('profLearningStyle').value,
+          daily_study_hours: parseFloat(document.getElementById('profDailyHours').value) || 3.0,
+          custom_directives: document.getElementById('profDirectives').value.trim()
+        };
+
+        try {
+          const res = await fetch(`${API_BASE}/api/v1/profile`, {
+            method: 'PUT',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(payload)
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            STATE.profile = data.profile;
+            profileModal.classList.add('hidden');
+            showToast('Study profile saved to SQLite database!', 'success');
+            updateUserUI();
+          } else {
+            const err = await res.json();
+            showToast(err.detail || 'Failed to update profile', 'warning');
+          }
+        } catch (err) {
+          showToast('Failed to connect to backend', 'warning');
+        }
+      }
+
+      // =========================================================================
+      // PAYSTACK MONETIZATION & INLINE CHECKOUT
+      // =========================================================================
+      let paystackConfig = {
+        public_key: 'pk_test_dummy_paystack_key',
+        currency: 'NGN',
+        amount: 500000,
+        price_display: '₦5,000.00',
+        plan_name: 'StudyMaster Pro'
+      };
+
+      async function fetchBillingConfig() {
+        try {
+          const res = await fetch(`${API_BASE}/api/v1/billing/config`);
+          if (res.ok) {
+            const data = await res.json();
+            paystackConfig = Object.assign(paystackConfig, data);
+            
+            const modalPriceEl = document.getElementById('modalPlanPriceDisplay');
+            if (modalPriceEl && data.price_display) {
+              modalPriceEl.textContent = data.price_display;
+            }
+            const sidebarPriceEl = document.getElementById('sidebarUpgradePriceText');
+            if (sidebarPriceEl && data.price_display) {
+              sidebarPriceEl.textContent = `Upgrade (${data.price_display}/mo)`;
+            }
+            const headerPriceEl = document.getElementById('headerUpgradeText');
+            if (headerPriceEl && data.price_display) {
+              headerPriceEl.textContent = `Go Pro (${data.price_display})`;
+            }
+            const dropdownPriceEl = document.getElementById('dropdownUpgradeText');
+            if (dropdownPriceEl && data.price_display) {
+              dropdownPriceEl.textContent = `Upgrade to Pro (${data.price_display}/mo)`;
+            }
+          }
+        } catch (e) {
+          console.warn('Could not load Paystack billing config:', e);
+        }
+      }
+
+      async function handleInitiatePaystackCheckout() {
+        try {
+          showToast('Preparing Paystack checkout...', 'info');
+          const res = await fetch(`${API_BASE}/api/v1/billing/initialize`, {
+            method: 'POST',
+            headers: getAuthHeaders()
+          });
+
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            showToast(err.detail || 'Checkout initialization failed', 'warning');
+            return;
+          }
+
+          const data = await res.json();
+          const reference = data.reference || data.session_id;
+
+          if (typeof window.PaystackPop !== 'undefined' && data.public_key && !data.public_key.includes('dummy')) {
+            showToast('Opening Paystack secure payment window...', 'info');
+            const handler = window.PaystackPop.setup({
+              key: data.public_key,
+              email: STATE.user ? STATE.user.email : 'student@example.com',
+              amount: data.amount || paystackConfig.amount,
+              currency: data.currency || paystackConfig.currency || 'NGN',
+              ref: reference,
+              metadata: {
+                custom_fields: [
+                  {
+                    display_name: "Plan Name",
+                    variable_name: "plan_name",
+                    value: "StudyMaster Pro"
+                  },
+                  {
+                    display_name: "User ID",
+                    variable_name: "user_id",
+                    value: STATE.user ? String(STATE.user.id) : "guest"
+                  }
+                ]
+              },
+              callback: async function (response) {
+                showToast('Payment confirmed! Verifying with backend...', 'info');
+                const verifyRef = (response && response.reference) ? response.reference : reference;
+                await completePaystackVerification(verifyRef);
+              },
+              onClose: function () {
+                showToast('Paystack payment window closed.', 'info');
+              }
+            });
+            handler.openIframe();
+          } else {
+            if (data.checkout_url) {
+              window.location.href = data.checkout_url;
+            } else {
+              showToast('Received invalid checkout URL', 'warning');
+            }
+          }
+        } catch (e) {
+          console.error('Checkout error:', e);
+          showToast('Connection error during checkout', 'warning');
+        }
+      }
+
+      async function completePaystackVerification(reference) {
+        try {
+          const res = await fetch(`${API_BASE}/api/v1/billing/verify?reference=${encodeURIComponent(reference)}`, {
+            headers: getAuthHeaders()
+          });
+          if (res.ok) {
+            showToast('🎉 Upgraded to StudyMaster Pro!', 'success');
+            if (STATE.user) {
+              STATE.user.tier = 'pro';
+            }
+            updateUserUI();
+            subscriptionModal.classList.add('hidden');
+          } else {
+            const err = await res.json().catch(() => ({}));
+            showToast(err.detail || 'Verification pending. Refreshing account...', 'warning');
+            await fetchCurrentUser();
+          }
+        } catch (err) {
+          showToast('Payment completed. Refreshing status...', 'info');
+          await fetchCurrentUser();
+        }
+      }
+
+      // Check URL on load for return callbacks from Paystack redirects
+      async function checkUrlForPaymentCallback() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const ref = urlParams.get('reference') || urlParams.get('trxref') || urlParams.get('session_id');
+        if (ref) {
+          window.history.replaceState({}, document.title, window.location.pathname);
+          showToast('Verifying Paystack payment reference...', 'info');
+          await completePaystackVerification(ref);
+        }
+      }
+
+      // Expose globally
+      window.payWithPaystack = handleInitiatePaystackCheckout;
+      window.handleInitiatePaystackCheckout = handleInitiatePaystackCheckout;
+      window.handleInitiateStripeCheckout = handleInitiatePaystackCheckout;
+
+      // =========================================================================
+      // SERVER HISTORY (SQLITE)
+      // =========================================================================
+      async function fetchUserServerHistory() {
+        if (!STATE.token) return;
+        try {
+          const res = await fetch(`${API_BASE}/api/v1/chat/history`, {
+            headers: getAuthHeaders()
+          });
+          if (res.ok) {
+            const json = await res.json();
+            STATE.serverHistory = json.history || [];
+            renderSavedServerHistory();
+          }
+        } catch (err) {
+          console.warn('Failed to load SQLite chat history:', err);
+        }
+      }
+
+      function renderSavedServerHistory(filterQuery = '') {
+        if (!STATE.user || !STATE.serverHistory || STATE.serverHistory.length === 0) {
+          savedChatHistoryList.innerHTML = `<div class="text-[11px] text-gray-500 px-2 py-1 italic">No SQLite messages yet</div>`;
+          return;
+        }
+
+        let items = STATE.serverHistory;
+        if (filterQuery.trim()) {
+          const q = filterQuery.toLowerCase();
+          items = items.filter(m => (m.content || '').toLowerCase().includes(q));
+        }
+
+        savedChatHistoryList.innerHTML = items.slice(-8).reverse().map(msg => {
+          const isUser = msg.role === 'user';
+          return `
+            <div class="px-2 py-1.5 rounded-lg bg-chatgpt-card/40 border border-chatgpt-border/40 text-[11px] text-gray-300">
+              <div class="flex items-center justify-between text-[10px] text-gray-400 mb-0.5">
+                <span class="${isUser ? 'text-cyan-400 font-semibold' : 'text-emerald-400 font-semibold'}">${isUser ? 'You' : 'StudyMaster'}</span>
+                <span>${msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</span>
+              </div>
+              <p class="truncate text-gray-200">${escapeHtml(msg.content || '')}</p>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // =========================================================================
+      // SESSIONS & LOCAL CHAT
+      // =========================================================================
+      function loadLocalSessions() {
+        try {
+          const stored = localStorage.getItem('studymaster_sessions');
+          STATE.localSessions = stored ? JSON.parse(stored) : [];
+        } catch (e) {
+          STATE.localSessions = [];
+        }
+      }
+
+      function saveLocalSessions() {
+        try {
+          localStorage.setItem('studymaster_sessions', JSON.stringify(STATE.localSessions));
+          renderRecentChats();
+        } catch (e) {
+          console.error('Failed to save sessions:', e);
+        }
+      }
+
+      function startNewChat() {
+        const newSession = {
+          id: 'session_' + Date.now(),
+          title: 'New Study Conversation',
+          createdAt: new Date().toISOString(),
+          messages: []
+        };
+        STATE.localSessions.unshift(newSession);
+        STATE.currentChatId = newSession.id;
+        saveLocalSessions();
+        loadSession(newSession.id);
+        if (window.innerWidth < 768) closeSidebar();
+        chatInput.focus();
+      }
+
+      function loadSession(sessionId) {
+        const session = STATE.localSessions.find(s => s.id === sessionId);
+        if (!session) return;
+        STATE.currentChatId = sessionId;
+        renderRecentChats();
+        renderMessages(session.messages);
+      }
+
+      function renderRecentChats(filterQuery = '') {
+        chatCountBadge.textContent = STATE.localSessions.length;
+        
+        let filtered = STATE.localSessions;
+        if (filterQuery.trim()) {
+          const q = filterQuery.toLowerCase();
+          filtered = STATE.localSessions.filter(s => 
+            s.title.toLowerCase().includes(q) || 
+            s.messages.some(m => m.content.toLowerCase().includes(q))
+          );
+        }
+
+        if (filtered.length === 0) {
+          recentChatsList.innerHTML = `<div class="text-[11px] text-gray-500 px-2 py-2 text-center">${filterQuery ? 'No matching sessions' : 'No study sessions yet'}</div>`;
+          return;
+        }
+
+        recentChatsList.innerHTML = filtered.map(s => {
+          const isActive = s.id === STATE.currentChatId;
+          return `
+            <div class="group relative flex items-center justify-between px-2.5 py-2 rounded-xl text-xs cursor-pointer transition-all ${isActive ? 'bg-chatgpt-card text-white font-medium border border-chatgpt-border shadow-sm' : 'text-gray-300 hover:bg-chatgpt-card/60 hover:text-white'}" onclick="window.studyMasterLoadSession('${s.id}')">
+              <div class="flex items-center gap-2 overflow-hidden flex-1 mr-1">
+                <svg class="w-3.5 h-3.5 ${isActive ? 'text-emerald-400' : 'text-gray-400'} flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                <span class="truncate">${escapeHtml(s.title)}</span>
+              </div>
+              <button onclick="event.stopPropagation(); window.studyMasterDeleteSession('${s.id}')" title="Delete session" class="p-1 rounded text-gray-400 hover:text-red-400 hover:bg-chatgpt-hover opacity-0 group-hover:opacity-100 transition-opacity">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+              </button>
+            </div>
+          `;
+        }).join('');
+      }
+
+      window.studyMasterLoadSession = function(id) {
+        loadSession(id);
+        if (window.innerWidth < 768) closeSidebar();
+      };
+
+      window.studyMasterDeleteSession = function(id) {
+        if (!confirm('Delete this study session?')) return;
+        STATE.localSessions = STATE.localSessions.filter(s => s.id !== id);
+        saveLocalSessions();
+        if (STATE.currentChatId === id) {
+          if (STATE.localSessions.length > 0) {
+            loadSession(STATE.localSessions[0].id);
+          } else {
+            startNewChat();
+          }
+        }
+      };
+
+      // =========================================================================
+      // MESSAGE RENDERING
+      // =========================================================================
+      function renderMessages(messages) {
+        if (!messages || messages.length === 0) {
+          chatEmptyState.classList.remove('hidden');
+          messagesList.innerHTML = '';
+          return;
+        }
+
+        chatEmptyState.classList.add('hidden');
+        messagesList.innerHTML = messages.map((m, idx) => createMessageHtml(m, idx)).join('');
+        
+        document.querySelectorAll('pre code').forEach((el) => {
+          hljs.highlightElement(el);
+        });
+
+        scrollToBottom();
+      }
+
+      function createMessageHtml(message, index) {
+        const isUser = message.role === 'user';
+        const rawContent = message.content || '';
+        const parsedContent = isUser ? escapeHtml(rawContent).replace(/\n/g, '<br>') : marked.parse(rawContent);
+        const timeStr = message.timestamp ? new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+        const userInitial = STATE.user ? STATE.user.username.charAt(0).toUpperCase() : 'S';
+
+        if (isUser) {
+          return `
+            <div class="flex items-start justify-end gap-3 message-item group">
+              <div class="flex flex-col items-end max-w-[85%] sm:max-w-[75%]">
+                <div class="flex items-center gap-1.5 mb-1 px-1 text-[11px] text-gray-400">
+                  <span>${STATE.user ? escapeHtml(STATE.user.username) : 'You'}</span>
+                  <span>•</span>
+                  <span>${timeStr}</span>
+                </div>
+                <div class="bg-chatgpt-userMsg border border-chatgpt-border rounded-2xl rounded-tr-sm px-4 py-2.5 text-sm text-gray-100 shadow-sm leading-relaxed whitespace-pre-wrap">
+                  ${parsedContent}
+                </div>
+              </div>
+              <div class="w-8 h-8 rounded-full bg-emerald-700 flex items-center justify-center text-white font-bold text-xs flex-shrink-0 shadow">
+                ${userInitial}
+              </div>
+            </div>
+          `;
+        } else {
+          return `
+            <div class="flex items-start gap-3.5 message-item group">
+              <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white text-sm flex-shrink-0 shadow shadow-emerald-500/20">
+                🎓
+              </div>
+              <div class="flex-1 max-w-[90%] sm:max-w-[85%]">
+                <div class="flex items-center gap-2 mb-1 px-1">
+                  <span class="font-bold text-xs text-emerald-400">StudyMaster AI</span>
+                  <span class="text-[10px] text-gray-400">${timeStr}</span>
+                </div>
+                <div class="prose text-sm text-gray-200 leading-relaxed overflow-x-auto">
+                  ${parsedContent}
+                </div>
+                <div class="flex items-center gap-2 mt-2 pt-1 text-gray-400 opacity-80 group-hover:opacity-100 transition-opacity">
+                  <button onclick="window.studyMasterCopyText(${index})" title="Copy to clipboard" class="p-1 rounded hover:text-white hover:bg-chatgpt-card text-[11px] flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                    <span>Copy</span>
+                  </button>
+                  <button onclick="window.studyMasterSpeakText(${index})" title="Listen (Text to Speech)" class="p-1 rounded hover:text-emerald-400 hover:bg-chatgpt-card text-[11px] flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path></svg>
+                    <span>Listen</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+      }
+
+      window.studyMasterCopyText = function(index) {
+        const session = STATE.localSessions.find(s => s.id === STATE.currentChatId);
+        if (!session || !session.messages[index]) return;
+        navigator.clipboard.writeText(session.messages[index].content);
+        showToast('Copied to clipboard!', 'success');
+      };
+
+      window.studyMasterSpeakText = function(index) {
+        const session = STATE.localSessions.find(s => s.id === STATE.currentChatId);
+        if (!session || !session.messages[index]) return;
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+          const utterance = new SpeechSynthesisUtterance(session.messages[index].content);
+          window.speechSynthesis.speak(utterance);
+          showToast('Playing voice explanation...', 'info');
+        } else {
+          showToast('Speech not supported in this browser', 'warning');
+        }
+      };
+
+      // =========================================================================
+      // MESSAGE SUBMISSION & AI EXECUTION
+      // =========================================================================
+      async function handleSendMessage(text) {
+        const messageText = text || chatInput.value.trim();
+        if (!messageText || STATE.isGenerating) return;
+
+        STATE.isGenerating = true;
+        chatInput.value = '';
+        autoResizeTextarea();
+        updateSendBtnState();
+
+        let session = STATE.localSessions.find(s => s.id === STATE.currentChatId);
+        if (!session) {
+          startNewChat();
+          session = STATE.localSessions[0];
+        }
+
+        if (session.messages.length === 0) {
+          session.title = messageText.slice(0, 30) + (messageText.length > 30 ? '...' : '');
+        }
+
+        const userMsg = {
+          role: 'user',
+          content: messageText,
+          timestamp: new Date().toISOString()
+        };
+        session.messages.push(userMsg);
+        saveLocalSessions();
+        renderMessages(session.messages);
+
+        thinkingIndicator.classList.remove('hidden');
+        scrollToBottom();
+
+        try {
+          let res;
+          try {
+            res = await fetch(`${API_BASE}/api/v1/chat`, {
+              method: 'POST',
+              headers: getAuthHeaders(),
+              body: JSON.stringify({
+                message: messageText,
+                history: session.messages
+              })
+            });
+          } catch (initialFetchErr) {
+            const altPort = API_BASE.includes('8080') ? 'http://127.0.0.1:8000' : 'http://127.0.0.1:8080';
+            res = await fetch(`${altPort}/api/v1/chat`, {
+              method: 'POST',
+              headers: getAuthHeaders(),
+              body: JSON.stringify({
+                message: messageText,
+                history: session.messages
+              })
+            });
+            API_BASE = altPort;
+          }
+
+          if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            throw new Error(errData.detail || `Server error: ${res.status}`);
+          }
+
+          const data = await res.json();
+          const assistantReply = data.reply || "I have received your study question.";
+
+          const aiMsg = {
+            role: 'assistant',
+            content: assistantReply,
+            timestamp: new Date().toISOString(),
+            ai_name: 'StudyMaster AI'
+          };
+          session.messages.push(aiMsg);
+          saveLocalSessions();
+
+          if (STATE.user) {
+            await fetchUserServerHistory();
+          }
+
+        } catch (error) {
+          const errorMsg = {
+            role: 'assistant',
+            content: `⚠️ **AI Execution Notice:** ${error.message}\n\n*Please ensure your FastAPI backend is active.*`,
+            timestamp: new Date().toISOString(),
+            ai_name: 'StudyMaster AI'
+          };
+          session.messages.push(errorMsg);
+          saveLocalSessions();
+        } finally {
+          thinkingIndicator.classList.add('hidden');
+          STATE.isGenerating = false;
+          renderMessages(session.messages);
+          updateSendBtnState();
+          chatInput.focus();
+        }
+      }
+
+      // =========================================================================
+      // SPEECH RECOGNITION (VOICE INPUT)
+      // =========================================================================
+      function setupSpeechRecognition() {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) return;
+
+        STATE.speechRecognition = new SpeechRecognition();
+        STATE.speechRecognition.continuous = false;
+        STATE.speechRecognition.interimResults = false;
+        STATE.speechRecognition.lang = 'en-US';
+
+        STATE.speechRecognition.onstart = () => {
+          STATE.isListening = true;
+          btnVoiceInput.classList.add('text-emerald-400', 'animate-pulse');
+          showToast('Listening... Speak your study question', 'info');
+        };
+
+        STATE.speechRecognition.onresult = (event) => {
+          const transcript = event.results[0][0].transcript;
+          chatInput.value = (chatInput.value + ' ' + transcript).trim();
+          autoResizeTextarea();
+          updateSendBtnState();
+        };
+
+        STATE.speechRecognition.onend = () => {
+          STATE.isListening = false;
+          btnVoiceInput.classList.remove('text-emerald-400', 'animate-pulse');
+        };
+
+        btnVoiceInput.addEventListener('click', () => {
+          if (STATE.isListening) {
+            STATE.speechRecognition.stop();
+          } else {
+            STATE.speechRecognition.start();
+          }
+        });
+      }
+
+      // =========================================================================
+      // EVENT LISTENERS SETUP
+      // =========================================================================
+      function setupEventListeners() {
+        chatForm.addEventListener('submit', (e) => {
+          e.preventDefault();
+          handleSendMessage();
+        });
+
+        chatInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSendMessage();
+          }
+        });
+
+        newChatBtn.addEventListener('click', startNewChat);
+
+        openSidebarBtn.addEventListener('click', () => {
+          sidebar.classList.remove('-translate-x-full');
+          sidebarOverlay.classList.remove('hidden');
+        });
+
+        closeSidebarBtn.addEventListener('click', closeSidebar);
+        sidebarOverlay.addEventListener('click', closeSidebar);
+
+        userProfilePill.addEventListener('click', (e) => {
+          e.stopPropagation();
+          profileDropdown.classList.toggle('hidden');
+        });
+
+        document.addEventListener('click', () => {
+          profileDropdown.classList.add('hidden');
+        });
+
+        // Quick Auth Modals
+        btnQuickLogin.addEventListener('click', () => {
+          if (STATE.user) {
+            populateProfileModal();
+          } else {
+            openAuthModal();
+          }
+        });
+        btnOpenAuthModal.addEventListener('click', openAuthModal);
+        closeAuthModalBtn.addEventListener('click', () => authModal.classList.add('hidden'));
+
+        // Backdrop click to close modals
+        authModal.addEventListener('click', (e) => {
+          if (e.target === authModal) authModal.classList.add('hidden');
+        });
+        profileModal.addEventListener('click', (e) => {
+          if (e.target === profileModal) profileModal.classList.add('hidden');
+        });
+        subscriptionModal.addEventListener('click', (e) => {
+          if (e.target === subscriptionModal) subscriptionModal.classList.add('hidden');
+        });
+
+        tabAuthLogin.addEventListener('click', () => switchAuthTab('login'));
+        tabAuthRegister.addEventListener('click', () => switchAuthTab('register'));
+
+        // Profile Modal
+        btnOpenProfileSettings.addEventListener('click', populateProfileModal);
+        closeProfileModalBtn.addEventListener('click', () => profileModal.classList.add('hidden'));
+        studyProfileForm.addEventListener('submit', saveStudyProfile);
+
+        // Subscription Modal
+        btnOpenSubscriptionModal.addEventListener('click', () => subscriptionModal.classList.remove('hidden'));
+        btnHeaderUpgrade.addEventListener('click', () => subscriptionModal.classList.remove('hidden'));
+        btnTriggerUpgrade.addEventListener('click', () => subscriptionModal.classList.remove('hidden'));
+        closeSubModalBtn.addEventListener('click', () => subscriptionModal.classList.add('hidden'));
+        if (btnProceedToPaystackCheckout) {
+          btnProceedToPaystackCheckout.addEventListener('click', handleInitiatePaystackCheckout);
+        }
+
+        // Clear SQLite Chat History
+        btnClearCurrentHistory.addEventListener('click', async () => {
+          if (!STATE.user) {
+            showToast('Please sign in to manage SQLite history', 'warning');
+            return;
+          }
+          if (!confirm('Clear all conversation history stored in SQLite?')) return;
+          try {
+            const res = await fetch(`${API_BASE}/api/v1/chat/history`, {
+              method: 'DELETE',
+              headers: getAuthHeaders()
+            });
+            if (res.ok) {
+              STATE.serverHistory = [];
+              renderSavedServerHistory();
+              showToast('SQLite chat history cleared!', 'success');
+            }
+          } catch (e) {
+            showToast('Failed to clear history', 'warning');
+          }
+        });
+
+        // Logout
+        btnLogout.addEventListener('click', () => logoutUser(true));
+
+        // Sync SQLite History
+        refreshSavedHistoryBtn.addEventListener('click', async () => {
+          if (STATE.user) {
+            await fetchUserServerHistory();
+            showToast('Synced with SQLite database!', 'info');
+          } else {
+            showToast('Sign in to sync with SQLite', 'info');
+          }
+        });
+
+        // Suggestion Prompt Cards click
+        document.querySelectorAll('.prompt-card').forEach(card => {
+          card.addEventListener('click', () => {
+            const prompt = card.getAttribute('data-prompt');
+            if (prompt) handleSendMessage(prompt);
+          });
+        });
+
+        // Scroll button
+        chatMessagesContainer.addEventListener('scroll', () => {
+          const dist = chatMessagesContainer.scrollHeight - chatMessagesContainer.scrollTop - chatMessagesContainer.clientHeight;
+          if (dist > 200) {
+            scrollToBottomBtn.classList.remove('hidden');
+          } else {
+            scrollToBottomBtn.classList.add('hidden');
+          }
+        });
+
+        scrollToBottomBtn.addEventListener('click', scrollToBottom);
+
+        btnInsertTemplate.addEventListener('click', () => {
+          chatInput.value = "Quiz me with 5 challenging practice questions on: ";
+          autoResizeTextarea();
+          updateSendBtnState();
+          chatInput.focus();
+        });
+
+        // Search in history
+        historySearchInput.addEventListener('input', (e) => {
+          const query = e.target.value;
+          if (query.length > 0) {
+            clearSearchBtn.classList.remove('hidden');
+            renderRecentChats(query);
+            renderSavedServerHistory(query);
+          } else {
+            clearSearchBtn.classList.add('hidden');
+            renderRecentChats();
+            renderSavedServerHistory();
+          }
+        });
+
+        clearSearchBtn.addEventListener('click', () => {
+          historySearchInput.value = '';
+          clearSearchBtn.classList.add('hidden');
+          renderRecentChats();
+          renderSavedServerHistory();
+        });
+
+        // Handle Login Submission
+        loginForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const email = document.getElementById('loginEmail').value.trim();
+          const password = document.getElementById('loginPassword').value;
+          const submitBtn = loginForm.querySelector('button[type="submit"]');
+          const originalText = submitBtn.textContent;
+
+          try {
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Signing In...";
+            const res = await fetch(`${API_BASE}/api/v1/auth/login`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email, password })
+            });
+
+            if (res.ok) {
+              const data = await res.json();
+              STATE.token = data.access_token;
+              STATE.user = data.user;
+              STATE.profile = data.profile;
+              localStorage.setItem('studymaster_token', data.access_token);
+              updateUserUI();
+              await fetchUserServerHistory();
+              authModal.classList.add('hidden');
+              loginForm.reset();
+              showToast(`Welcome back, ${data.user.username}!`, 'success');
+            } else {
+              const err = await res.json().catch(() => ({}));
+              showToast(err.detail || 'Login failed: check credentials', 'warning');
+            }
+          } catch (e) {
+            showToast('Unable to reach auth server', 'warning');
+          } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+          }
+        });
+
+        // Handle Register Submission
+        registerForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const username = document.getElementById('regUsername').value.trim();
+          const email = document.getElementById('regEmail').value.trim();
+          const password = document.getElementById('regPassword').value;
+          const submitBtn = registerForm.querySelector('button[type="submit"]');
+          const originalText = submitBtn.textContent;
+
+          try {
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Creating Account...";
+            const res = await fetch(`${API_BASE}/api/v1/auth/register`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ username, email, password })
+            });
+
+            if (res.ok) {
+              const data = await res.json();
+              STATE.token = data.access_token;
+              STATE.user = data.user;
+              STATE.profile = data.profile;
+              localStorage.setItem('studymaster_token', data.access_token);
+              updateUserUI();
+              authModal.classList.add('hidden');
+              registerForm.reset();
+              showToast(`Account created! Welcome, ${data.user.username}!`, 'success');
+            } else {
+              const err = await res.json().catch(() => ({}));
+              showToast(err.detail || 'Registration failed', 'warning');
+            }
+          } catch (e) {
+            showToast('Unable to reach auth server', 'warning');
+          } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+          }
+        });
+
+        // Global shortcut Ctrl+K
+        document.addEventListener('keydown', (e) => {
+          if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+            e.preventDefault();
+            startNewChat();
+          }
+        });
+      }
+
+      function openAuthModal() {
+        authModal.classList.remove('hidden');
+        switchAuthTab('login');
+      }
+
+      function switchAuthTab(tab) {
+        if (tab === 'login') {
+          tabAuthLogin.className = "px-4 py-2 text-xs font-semibold border-b-2 border-emerald-500 text-emerald-400 transition-colors";
+          tabAuthRegister.className = "px-4 py-2 text-xs font-semibold border-b-2 border-transparent text-gray-400 hover:text-white transition-colors";
+          loginForm.classList.remove('hidden');
+          registerForm.classList.add('hidden');
+        } else {
+          tabAuthRegister.className = "px-4 py-2 text-xs font-semibold border-b-2 border-emerald-500 text-emerald-400 transition-colors";
+          tabAuthLogin.className = "px-4 py-2 text-xs font-semibold border-b-2 border-transparent text-gray-400 hover:text-white transition-colors";
+          registerForm.classList.remove('hidden');
+          loginForm.classList.add('hidden');
+        }
+      }
+
+      function closeSidebar() {
+        sidebar.classList.add('-translate-x-full');
+        sidebarOverlay.classList.add('hidden');
+      }
+
+      function autoResizeTextarea() {
+        chatInput.style.height = 'auto';
+        chatInput.style.height = Math.min(chatInput.scrollHeight, 180) + 'px';
+        charCounter.textContent = `${chatInput.value.length} chars`;
+        updateSendBtnState();
+      }
+
+      function updateSendBtnState() {
+        sendBtn.disabled = chatInput.value.trim().length === 0 || STATE.isGenerating;
+      }
+
+      function scrollToBottom() {
+        chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
+      }
+
+      function escapeHtml(str) {
+        if (!str) return '';
+        const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+        return String(str).replace(/[&<>"']/g, s => map[s]);
+      }
+
+      function showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        const bgColors = {
+          success: 'bg-emerald-600 text-white',
+          warning: 'bg-amber-600 text-white',
+          info: 'bg-chatgpt-card text-gray-100 border border-chatgpt-border'
+        };
+        toast.className = `fixed top-5 right-5 z-50 px-4 py-2.5 rounded-xl shadow-2xl text-xs font-medium flex items-center gap-2 transform transition-all duration-300 translate-y-[-20px] opacity-0 ${bgColors[type] || bgColors.info}`;
+        toast.innerHTML = `
+          <span>${type === 'success' ? '✓' : type === 'warning' ? '⚠️' : 'ℹ️'}</span>
+          <span>${escapeHtml(message)}</span>
+        `;
+        document.body.appendChild(toast);
+        requestAnimationFrame(() => toast.classList.remove('translate-y-[-20px]', 'opacity-0'));
+        setTimeout(() => {
+          toast.classList.add('opacity-0', 'translate-y-[-20px]');
+          setTimeout(() => toast.remove(), 300);
+        }, 3200);
+      }
+
+      document.addEventListener('DOMContentLoaded', initApp);
+    })();
+  </script>
+</body>
+</html>

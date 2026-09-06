@@ -1,0 +1,7 @@
+.aider*
+.env
+*.db
+study_app.db-shm
+study_app.db-wal
+project.zip
+all_my_code.txt

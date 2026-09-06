@@ -1,0 +1,7 @@
+{
+    "python.defaultInterpreterPath": "C:\\Users\\User\\AppData\\Local\\Python\\pythoncore-3.14-64\\python.exe",
+    "python.terminal.activateEnvironment": true,
+    "python.terminal.useEnvFile": true,
+    "python.pyrefly.disableLanguageServices": true,
+    "python.languageServer": "BasedPyright"
+}
