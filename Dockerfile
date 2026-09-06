@@ -16,5 +16,5 @@ COPY . .
 # Expose the standard web traffic port
 EXPOSE 8080
 
-# The definitive command to run your FastAPI application cleanly
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
+# TO THIS DETERMINISTIC FORMAT:
+CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
